@@ -1,0 +1,16 @@
+.adthrive-ad {
+clear: both;
+}
+
+.adthrive-footer {
+z-index:10000001 !important;
+}
+
+@media (max-width: 768px) {
+#player_1 {
+max-width: 100%;
+}
+}
+.sidebar .adthrive-ad {
+overflow-x: initial; 
+}

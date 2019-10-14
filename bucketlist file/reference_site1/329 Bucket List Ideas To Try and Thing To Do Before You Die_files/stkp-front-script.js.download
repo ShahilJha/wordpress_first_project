@@ -1,0 +1,78 @@
+/**
+  * Sticky Profit Builder Standard
+  * v0.0.5
+  * URI: http://www.vast9.com
+**/
+
+var stckp = {topMargin:0};
+
+(function($) {
+    var scrollTop=0, stopFtrObjTop=0, stopHdrObjBtm=0, prevSibHeight=0, myStckyTop=0, parentTop=0;
+    
+    function make_sticky(){
+        if(stkpVars.stck.stop_ftr==1 && $.trim(stkpVars.stck.stop_ftr_id)!='' && $('#'+stkpVars.stck.stop_ftr_id).length > 0){
+            stopFtrObjTop = $("#"+stkpVars.stck.stop_ftr_id).offset().top+parseInt($("#"+stkpVars.stck.stop_ftr_id).css('margin-top'));
+        }
+        
+        prevSibHeight = 0; // always reset;
+        $('.'+stkpVars.stck.cls_wdgt).each(function(i,stk){
+            prevSibHeight += parseInt($(stk).css('margin-top'));
+            stk.orgnlTop = $(stk).offset().top;
+            stk.proxyTop = stk.orgnlTop;// - prevSibHeight;
+            stk.stckyTop = prevSibHeight;
+            stk.hgt = $(stk).outerHeight();
+            prevSibHeight += stk.hgt + parseInt($(stk).css('margin-bottom'));
+            
+            stk.stickyWidth = $(stk).width();
+        });
+        
+        $(window).scroll(function(e){
+            scrollTop = $(window).scrollTop();
+            $('.'+stkpVars.stck.cls_wdgt).each(function(i,stk){
+                parentTop = $(this.parentNode).offset().top;
+                myStckyTop = this.stckyTop + stckp.topMargin;
+                
+                if( (scrollTop>parentTop && this.proxyTop < (scrollTop+myStckyTop)) && (stopFtrObjTop==0 || stopFtrObjTop>=(scrollTop+myStckyTop+this.hgt)) ){
+                    if( $(this).data('sticked')!=1 ){
+                        var hgt = $(this).height();
+                        $(this).clone().removeClass(stkpVars.stck.cls_wdgt).addClass('stkp-placer').attr('id','')
+                            .height(hgt).empty().insertAfter(stk);
+                        $(this).css({width:this.stickyWidth+'px',position:'fixed',top:myStckyTop}).css('z-index',function(i,zi){
+                            return (zi < 999999900 || zi.toLowerCase()=='auto')? 999999900:zi;
+                        })
+                        .css('background-color',function(i,bg){
+                            return stkpVars.stck.bg_enable==1? stkpVars.stck.bg_color:bg;
+                        }).data('sticked',1);
+                    }
+                } else {
+                    if( $(this).data('sticked')==1 ){
+                        $(this).css({'position':'',top:'',zIndex:''})
+                            .css('background-color','').data('sticked','');
+                        $(this).next('.stkp-placer').remove();
+                    }
+                }
+            });
+        });
+    }
+    
+    $(window).load(function(){
+        
+        if( typeof(stkpVars)!='undefined' ){
+            
+            //Sticky Objects:
+            if( typeof(stkpVars.stck)!='undefined' && stkpVars.stck.active==1 ){
+                if( stkpVars.stck.delay && stkpVars.stck.delay_sec > 0 ){
+                    $('.'+stkpVars.stck.cls_wdgt).hide();
+                    setTimeout(function(){
+                        $('.'+stkpVars.stck.cls_wdgt).show();
+                        make_sticky();
+                        $(window).trigger('scroll');
+                    },stkpVars.stck.delay_sec*1000);
+                }else{
+                    make_sticky();
+                }
+            }
+        }
+	});
+    
+})(jQuery);
